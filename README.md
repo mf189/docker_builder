@@ -3,8 +3,6 @@
 ## Description
 The service enables the user to upload a single Dockerfile or .tar archive, which is then used to construct a Docker image. Once completed, the image is pushed to a Docker registry.
 
-**Note: This is an asynch implementation using Celery, a synchronous version can be found in the `synch` branch of this repository.**
-
 ## Requirements
 - Python/ pip
 - Running Docker deamon
@@ -15,11 +13,15 @@ The service enables the user to upload a single Dockerfile or .tar archive, whic
    ```bash
    pip install -r requirements.txt
     ```
-3. Start App:
+3. Build docker image:
     ```bash
-    docker-compose up --build
+    docker build -t image_builder .
     ```
-4. Use the `/build` endpoint to upload a Dockerfile and build the image.
+4. Run the Flask app in container:
+    ```bash
+    docker run -d -p 5000:5000 -v /var/run/docker.sock:/var/run/docker.sock image_builder
+    ```
+5. Use the `/build` endpoint to upload a Dockerfile and build the image.
    - Method: POST
    - Form Data: 
      - "file": Dockerfile or .tar archive 
@@ -29,8 +31,6 @@ The service enables the user to upload a single Dockerfile or .tar archive, whic
    - Request Parameters (optional):
      - name: Image name
      - tag: Image tag
-5. Use the `/status` endpoint to retrieve the status
-
 
 ## Usage
 #### Run Tests:
@@ -41,5 +41,4 @@ python -m unittest discover -s tests
 #### Send Request:
 ```bash
 curl -X POST -F "file=@tests\examples\single\Dockerfile" -F "registry=<registry>" -F "username=<username>" -F "password=<password>" "http://localhost:5000/build?name=my_image&tag=v1.0"
-curl "http://localhost:5000/status/<task_id>" 
 ```
